@@ -5,6 +5,10 @@
  */
 package home.mongo101java;
 
+import home.mongo101java.verticles.MongoClientVerticle;
+import home.mongo101java.verticles.WebClientVerticle;
+import io.vertx.core.Vertx;
+
 /**
  *
  * @author Matt
@@ -13,6 +17,13 @@ public class Main {
     
     public static void main(String[] args)
     {
+        Main.deployit(Vertx.vertx());
         System.out.println("----- Init------");
     }
+    
+    public static void deployit(Vertx vert)
+  {
+    vert.deployVerticle(new MongoClientVerticle());
+    vert.deployVerticle(new WebClientVerticle());
+  }
 }
