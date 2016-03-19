@@ -8,6 +8,7 @@ package home.mongo101java.verticles;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.Router;
 
 
 /**
@@ -18,6 +19,9 @@ public class WebClientVerticle extends AbstractVerticle{
     
     public void start() throws Exception {
         HttpServer server = vertx.createHttpServer();
+        
+        //Router router = new Router();
+        
         server.requestHandler(request -> {
 
          // This handler gets called for each request that arrives on the server
