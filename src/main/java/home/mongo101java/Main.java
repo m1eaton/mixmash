@@ -15,6 +15,8 @@ import io.vertx.core.Vertx;
  */
 public class Main {
     
+    // ToDo Add logging
+    
     public static void main(String[] args)
     {
         Main.deployit(Vertx.vertx());

@@ -17,6 +17,8 @@ import io.vertx.ext.web.Router;
  */
 public class WebClientVerticle extends AbstractVerticle{
     
+    //ToDo Need to create a main verticla that launches others.
+    
     public void start() throws Exception {
         HttpServer server = vertx.createHttpServer();
         
