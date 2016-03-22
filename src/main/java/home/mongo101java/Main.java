@@ -8,24 +8,29 @@ package home.mongo101java;
 import home.mongo101java.verticles.MongoClientVerticle;
 import home.mongo101java.verticles.WebClientVerticle;
 import io.vertx.core.Vertx;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Matt
  */
 public class Main {
-    
+
     // ToDo Add logging
-    
-    public static void main(String[] args)
-    {
+    private static final Logger logger = LoggerFactory.getLogger("logger");
+
+    public static void main(String[] args) {
         Main.deployit(Vertx.vertx());
         System.out.println("----- Init------");
     }
-    
-    public static void deployit(Vertx vert)
-  {
-    vert.deployVerticle(new MongoClientVerticle());
-    vert.deployVerticle(new WebClientVerticle());
-  }
+    /**
+     * Simple static class that uses Vertx instance to deploy verticles.
+     * @param vert 
+     */
+    public static void deployit(Vertx vert) {
+        logger.info("Deploying verticles");
+        vert.deployVerticle(new MongoClientVerticle());
+        vert.deployVerticle(new WebClientVerticle());
+    }
 }
