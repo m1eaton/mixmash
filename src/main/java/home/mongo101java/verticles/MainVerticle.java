@@ -5,10 +5,18 @@
  */
 package home.mongo101java.verticles;
 
+import io.vertx.core.AbstractVerticle;
+
 /**
  *
  * @author Matt
  */
-public class MainVerticle {
+public class MainVerticle extends AbstractVerticle{
+  
+    public void start() throws Exception {
+        System.out.println("Main Verticle launched");
+        
+        
+    }
     
 }

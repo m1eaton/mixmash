@@ -9,14 +9,15 @@ import io.vertx.ext.mongo.MongoClient;
 
 public class MongoClientVerticle extends AbstractVerticle {
 
-  
+//ToDo Need to check if Mongo is even running before trying to do anything and return a message
 
 
   @Override
   public void start() throws Exception {
 
     JsonObject config = Vertx.currentContext().config();
-
+    
+    // Should try and use the JAVA8 is null option
     String uri = config.getString("mongo_uri");
     if (uri == null) {
       uri = "mongodb://localhost:27017";
