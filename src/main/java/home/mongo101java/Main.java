@@ -30,7 +30,7 @@ public class Main {
      */
     public static void deployit(Vertx vert) {
         logger.info("Deploying verticles");
-        vert.deployVerticle(new MongoClientVerticle());
+        //vert.deployVerticle(new MongoClientVerticle());
         vert.deployVerticle(new WebClientVerticle());
     }
 }

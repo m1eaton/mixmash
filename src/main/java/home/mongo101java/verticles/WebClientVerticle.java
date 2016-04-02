@@ -5,6 +5,7 @@
  */
 package home.mongo101java.verticles;
 
+import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.Version;
@@ -12,26 +13,61 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
- * @author Matt
+ * @author Matt Eaton
+ * @Date 4/2/2016
+ * @Summary Trying to merge Vert.x Http server and not use Spark
  */
 public class WebClientVerticle extends AbstractVerticle {
 
-    Version v = new Version(2,3,23);
-    Configuration configuration = new Configuration(v);
-    //configuration. //setClassForTemplateLoading(SparkHomework.class, "/");
-    // Need to figure out how to set the classfor template loading.
-    
-    
-    //ToDo Need to create a main verticla that launches others.
-    public void start() throws Exception {
-        HttpServer server = vertx.createHttpServer();
+   private final Version v = new Version(2,3,23);
+   private final Configuration configuration;
+   private final File resourceFile; 
+   private FileReader reader;
+   private Template basicTemplate;
 
+   /**
+    * 
+    * 
+    */
+    public WebClientVerticle() {
+        this.configuration = new Configuration(v);
+        ClassLoader classLoader = getClass().getClassLoader();
+	resourceFile = new File(classLoader.getResource("answer.ftl").getFile());
+        try{
+        System.out.println("---------------------");
+        System.out.println(resourceFile.getAbsoluteFile().toString());
+        System.out.println(resourceFile.getCanonicalFile().toString());
+        System.out.println(resourceFile.getParentFile().toString());
+        System.out.println("---------------------");
+        }
+        catch(Exception e)
+        {
+            System.out.println(e.getMessage());
+        }
+    }
+   
+        
+    /**
+     * AbstractVerticle uses start to initialize the verticle.
+     * 
+     * @throws java.lang.Exception
+     */
+    public void start() throws Exception {
+        reader = new FileReader(resourceFile);
+        HttpServer server = vertx.createHttpServer();
+        configuration.setDirectoryForTemplateLoading(resourceFile.getParentFile());
         Router router = Router.router(vertx);
         router.route().path("/home");
         router.route().handler(routingContext -> {
@@ -40,11 +76,20 @@ public class WebClientVerticle extends AbstractVerticle {
             HttpServerResponse response = routingContext.response();
             response.putHeader("content-type", "text/plain");
             StringWriter writer = new StringWriter();
+            try {
+                basicTemplate = new Template("basicTemplate", reader, configuration);
+            } 
+            catch (IOException ex) {
+                Logger.getLogger(WebClientVerticle.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            
             try{
-                Template helloTemplate = configuration.getTemplate("answer.ftl");
+                //Template helloTemplate = configuration.getTemplate("answer.ftl");
                 Map<String, String> answerMap = new HashMap<String, String>();
                 answerMap.put("answer", createAnswer());
-                helloTemplate.process(answerMap, writer);
+                basicTemplate.process(answerMap, writer);
+                reader.close();
                 response.end(writer.toString());
                
             }
@@ -60,7 +105,10 @@ public class WebClientVerticle extends AbstractVerticle {
         server.requestHandler(router::accept).listen(8080);
     }
     
-        // Create a silly answer that's not obvious just by code inspection.  Easier just to get it running!
+    /**
+     * Helper method used to return a 
+     * @return String from Integer.toString
+     */
     private static String createAnswer() {
         int i = 0;
         for (int bit = 0; bit < 16; bit++) {
@@ -68,33 +116,4 @@ public class WebClientVerticle extends AbstractVerticle {
         }
         return Integer.toString(i);
     }
-    
-    /*
-        final Configuration configuration = new Configuration();
-        configuration.setClassForTemplateLoading(
-                SparkHomework.class, "/");
-
-        Spark.get(new Route("/") {
-            @Override
-            public Object handle(final Request request,
-                                 final Response response) {
-                StringWriter writer = new StringWriter();
-                try {
-                    Template helloTemplate = configuration.getTemplate("answer.ftl");
-
-                    Map<String, String> answerMap = new HashMap<String, String>();
-                    answerMap.put("answer", createAnswer());
-
-                    helloTemplate.process(answerMap, writer);
-                } catch (Exception e) {
-                    logger.error("Failed", e);
-                    halt(500);
-                }
-                return writer;
-            }
-        });
-    
-    
-    
-    */
 }
