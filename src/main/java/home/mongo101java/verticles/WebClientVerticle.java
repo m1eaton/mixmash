@@ -8,6 +8,7 @@ package home.mongo101java.verticles;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.Version;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
@@ -31,9 +32,9 @@ import java.util.logging.Logger;
  */
 public class WebClientVerticle extends AbstractVerticle {
 
-   private final Version v = new Version(2,3,23);
-   private final Configuration configuration;
-   private final File resourceFile; 
+   private Version version;// = new Version(2,3,23);
+   private Configuration configuration;
+   private File resourceFile; 
    private FileReader reader;
    private Template basicTemplate;
 
@@ -42,22 +43,51 @@ public class WebClientVerticle extends AbstractVerticle {
     * 
     */
     public WebClientVerticle() {
-        this.configuration = new Configuration(v);
+       try {
+           initFreemakerConfiguration();
+           //this.configuration = new Configuration(v);
+           //ClassLoader classLoader = getClass().getClassLoader();
+           //resourceFile = new File(classLoader.getResource("answer.ftl").getFile());
+           //try{
+           //System.out.println("---------------------");
+           //System.out.println(resourceFile.getAbsoluteFile().toString());
+           //System.out.println(resourceFile.getCanonicalFile().toString());
+           //System.out.println(resourceFile.getParentFile().toString());
+           //System.out.println("---------------------");
+           //}
+           //catch(Exception e)
+           //{
+           //   System.out.println(e.getMessage());
+           // }
+       } catch (IOException ex) {
+           Logger.getLogger(WebClientVerticle.class.getName()).log(Level.SEVERE, null, ex);
+       }
+       finally{
+           
+       }
+    }
+  
+    /**
+     * 
+     */
+    private void initFreemakerConfiguration() throws IOException{
+        version = new Version(2,3,23);
+        configuration = new Configuration(version);
         ClassLoader classLoader = getClass().getClassLoader();
-	resourceFile = new File(classLoader.getResource("answer.ftl").getFile());
-        try{
+        resourceFile = new File(classLoader.getResource("answer.ftl").getFile());
+        
         System.out.println("---------------------");
         System.out.println(resourceFile.getAbsoluteFile().toString());
         System.out.println(resourceFile.getCanonicalFile().toString());
         System.out.println(resourceFile.getParentFile().toString());
         System.out.println("---------------------");
-        }
-        catch(Exception e)
-        {
-            System.out.println(e.getMessage());
-        }
+        configuration.setDirectoryForTemplateLoading(resourceFile.getParentFile());
+        configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        configuration.setLogTemplateExceptions(false);
+        System.out.println("FreeMarker configuration initilization coplete");
     }
-   
+            
+    
         
     /**
      * AbstractVerticle uses start to initialize the verticle.
@@ -65,9 +95,9 @@ public class WebClientVerticle extends AbstractVerticle {
      * @throws java.lang.Exception
      */
     public void start() throws Exception {
-        reader = new FileReader(resourceFile);
+        //reader = new FileReader(resourceFile);
         HttpServer server = vertx.createHttpServer();
-        configuration.setDirectoryForTemplateLoading(resourceFile.getParentFile());
+        //configuration.setDirectoryForTemplateLoading(resourceFile.getParentFile());
         Router router = Router.router(vertx);
         router.route().path("/home");
         router.route().handler(routingContext -> {
@@ -76,20 +106,21 @@ public class WebClientVerticle extends AbstractVerticle {
             HttpServerResponse response = routingContext.response();
             response.putHeader("content-type", "text/plain");
             StringWriter writer = new StringWriter();
-            try {
-                basicTemplate = new Template("basicTemplate", reader, configuration);
-            } 
-            catch (IOException ex) {
-                Logger.getLogger(WebClientVerticle.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            //try {
+            //    basicTemplate = new Template("basicTemplate", reader, configuration);
+            //} 
+            //catch (IOException ex) {
+            //    Logger.getLogger(WebClientVerticle.class.getName()).log(Level.SEVERE, null, ex);
+            //}
             
-            
+            //Template temp = configuration.getTemplate("answer.ftl");
             try{
                 //Template helloTemplate = configuration.getTemplate("answer.ftl");
+                basicTemplate = configuration.getTemplate("answer.ftl");
                 Map<String, String> answerMap = new HashMap<String, String>();
                 answerMap.put("answer", createAnswer());
                 basicTemplate.process(answerMap, writer);
-                reader.close();
+                //reader.close();
                 response.end(writer.toString());
                
             }
@@ -103,6 +134,9 @@ public class WebClientVerticle extends AbstractVerticle {
         });
 
         server.requestHandler(router::accept).listen(8080);
+        System.out.println("*********************************************");
+        System.out.println("* Server Running http://localhost:8080/home *");
+        System.out.println("*********************************************");
     }
     
     /**
